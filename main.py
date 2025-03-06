@@ -1,7 +1,6 @@
 from qiskit import QuantumCircuit
 import numpy as np
 
-# Importações necessárias
 from portas_quanticas.funcao_pertinencia import inicializa_circuito_com_probabilidades
 from portas_quanticas.t_norma import toffoli_circuit_interactive
 from portas_quanticas.t_conorma import apply_or_fuzzy_generic
