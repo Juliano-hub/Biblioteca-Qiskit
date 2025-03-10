@@ -7,11 +7,13 @@ from portas_quanticas.t_conorma import apply_or_fuzzy_generic
 from portas_quanticas.dif import diff_fuzzy
 from portas_quanticas.grouping import add_grouping_function
 from portas_quanticas.xor import add_xor_fuzzy
-from portas_quanticas.overlap import add_overlap_function
+from portas_quanticas.overlap import overlap_function
 from portas_quanticas.implicacaoSN import implication
 from portas_quanticas.ql import ql_implication
-from portas_quanticas.xor_fuzzy import xor_ominus
-from portas_quanticas.xor_cross import xor_fuzzy_cross
+from portas_quanticas.xor_ominus import xor_ominus
+from portas_quanticas.xor_otimes import xor_otimes
+from portas_quanticas.xor_oplus import xor_oplus
+
 
 def mostrar_menu():
     print("Selecione a porta quântica desejada:")
@@ -22,8 +24,10 @@ def mostrar_menu():
     print("5: Aplicar XOR Fuzzy")
     print("6: Aplicar função de Overlap")  
     print("7: Aplicar função de Implicação (S, N)")  
-    print("8: Aplicar XOR Fuzzy otimes")
-    print("9: Aplicar XOR Fuzzy ominus")
+    print("8: Aplicar XOR Fuzzy ominus")
+    print("9: Aplicar XOR Fuzzy otimes")
+    print("10: Aplicar função de Implicação (QL)")
+    print("10: Aplicar XOR Fuzzy oplus")
     print("0: Sair")
     escolha = input("Digite o número da sua escolha e pressione Enter: ")
     return escolha
@@ -43,7 +47,10 @@ def main():
     if my_circuit is None:
         return
     
+    primeira_operacao = True  # Variável para rastrear a primeira operação
+
     while True:
+
         escolha = mostrar_menu()
         if escolha == '1':
             toffoli_circuit_interactive(my_circuit)
@@ -71,19 +78,32 @@ def main():
             add_xor_fuzzy(my_circuit)
             print("Circuito com XOR Fuzzy aplicado:")
             print(my_circuit.draw('text'))
-        elif escolha == '6':  # Chamada para a função Overlap
-            qubit1 = int(input("Digite o índice do primeiro qubit para Overlap: "))
-            qubit2 = int(input("Digite o índice do segundo qubit para Overlap: "))
-            add_overlap_function(my_circuit, qubit1, qubit2)
-            print("Circuito com função de Overlap aplicada:")
-            print(my_circuit.draw('text'))
+        elif escolha == '6':  # Opção para Overlap
+            if num_qubits < 7:
+                print("O número mínimo de qubits para utilizar a opção Overlap é 7.")
+            else:
+                selected_qubits = list(map(int, input("Digite os índices de 7 qubits para Overlap, separados por espaço (começando de 0): ").split()))
+                if len(selected_qubits) != 7:
+                    print("Erro: Você deve selecionar exatamente 7 qubits.")
+                else:
+                    overlap_function(my_circuit, selected_qubits)
+                    print("Circuito com Overlap aplicado:")
+                    print(my_circuit.draw('text'))
         elif escolha == '7':  # Implementação da chamada para a função de Implicação (S, N)
-            control_qubit = int(input("Digite o índice do qubit de controle para IMP: "))
-            target_qubit = int(input("Digite o índice do qubit alvo para IMP: "))
-            aux_qubit = int(input("Digite o índice do qubit auxiliar para IMP: "))
-            implication(my_circuit, control_qubit, target_qubit, aux_qubit)
-            print("Circuito com função de Implicação (S, N) aplicada:")
-            print(my_circuit.draw('text'))
+            control_qubit = int(input("Digite o índice do qubit de controle (premissa da implicação): "))
+            target_qubit = int(input("Digite o índice do qubit a ser implicado (segundo controle): "))
+            aux_qubit = int(input("Digite o índice do qubit auxiliar para armazenar o resultado: "))
+
+            # Verificar se os índices inseridos são válidos
+            if control_qubit == target_qubit or control_qubit == aux_qubit or target_qubit == aux_qubit:
+                print("Erro: Os qubits devem ser diferentes entre si.")
+            elif max(control_qubit, target_qubit, aux_qubit) >= num_qubits:
+                print("Erro: Índice de qubit inválido. Certifique-se de que os índices estão dentro do número de qubits do circuito.")
+            else:
+                implication(my_circuit, control_qubit, target_qubit, aux_qubit)
+                print("Circuito com função de Implicação (S, N) aplicada:")
+                print(my_circuit.draw('text'))
+
         elif escolha == '7':  # Implementação da chamada para a função de Implicação QL
             control_qubit1 = int(input("Digite o índice do primeiro qubit de controle para IMP: "))
             control_qubit2 = int(input("Digite o índice do segundo qubit de controle para IMP: "))
@@ -94,52 +114,65 @@ def main():
             print("Circuito com função de Implicação QL aplicada:")
             print(my_circuit.draw('text'))
 
-        elif escolha == '8':  # Chamada para a função XOR Fuzzy ôminus
-            print("Configuração para XOR ôminus")
-            try:
-                control_qubits = list(map(int, input("Digite os índices dos qubits de controle, separados por espaço (começando de 0): ").split()))
-                target_qubits = list(map(int, input("Digite os índices dos qubits alvo, separados por espaço (começando de 0): ").split()))
-                aux_qubits = list(map(int, input("Digite os índices dos qubits auxiliares, separados por espaço (começando de 0): ").split()))
-                
-                if len(control_qubits) < 2 or len(target_qubits) < 2 or len(aux_qubits) < 3:
-                    print("Erro: Insira o número mínimo de qubits necessário para controle, alvo e auxiliares.")
-                    continue
-
-                xor_ominus(my_circuit, control_qubits, target_qubits, aux_qubits)
-                print("Circuito com XOR Fuzzy ôminus aplicado:")
-                print(my_circuit.draw('text'))
-            except ValueError as e:
-                print(e)
-            except Exception as e:
-                print("Ocorreu um erro:", e)
-
-
-        elif escolha == '9': 
-            print("Configuração para XOR Fuzzy Cross")
-            control_qubits = list(map(int, input("Digite os índices dos qubits de controle, separados por espaço (começando de 0): ").split()))
-            if len(control_qubits) < 2:
-                print("Erro: Insira pelo menos dois qubits de controle.")
+        elif escolha == '8':  # Opção para XOR Fuzzy ôminus
+            if num_qubits < 5:
+                print("O número mínimo de qubits para utilizar a opção XOR ôminus é 5.")
                 continue
-
-            target_qubits = list(map(int, input("Digite os índices dos qubits alvo, separados por espaço (começando de 0): ").split()))
-            if len(target_qubits) < 2:
-                print("Erro: Insira pelo menos dois qubits alvo.")
+            selected_qubits = list(map(int, input("Digite os índices de 5 qubits para o circuito XOR ôminus, separados por espaço (começando de 0): ").split()))
+            if len(selected_qubits) != 5:
+                print("Erro: Você deve selecionar exatamente 5 qubits.")
                 continue
-
-            aux_qubits = list(map(int, input("Digite os índices dos qubits auxiliares, separados por espaço (começando de 0): ").split()))
-            if len(aux_qubits) < 3:
-                print("Erro: Insira pelo menos três qubits auxiliares.")
-                continue
-
-            xor_fuzzy_cross(my_circuit, control_qubits, target_qubits, aux_qubits)
-            print("Circuito com XOR Fuzzy Cross aplicado:")
+            xor_ominus(my_circuit, selected_qubits)
+            print("Circuito com XOR Fuzzy ôminus aplicado:")
             print(my_circuit.draw('text'))
+
+        elif escolha == '9':  # Opção para XOR Fuzzy ôtimes
+            if num_qubits < 7:
+                print("O número mínimo de qubits para utilizar a opção XOR ôtimes é 7.")
+            else:
+                selected_qubits = list(map(int, input("Digite os índices de 7 qubits para o circuito XOR ôtimes, separados por espaço (começando de 0): ").split()))
+                if len(selected_qubits) != 7:
+                    print("Erro: Você deve selecionar exatamente 7 qubits.")
+                else:
+                    xor_otimes(my_circuit, selected_qubits)
+                    print("Circuito com XOR Fuzzy ôtimes aplicado:")
+                    print(my_circuit.draw('text'))
+        elif escolha == '10':  # Nova opção para o circuito personalizado com 5 qubits
+            if num_qubits < 5:
+                print("O número mínimo de qubits para essa operação é 5.")
+            else:
+                selected_qubits = list(map(int, input("Digite os índices de 5 qubits para o circuito, separados por espaço (começando de 0): ").split()))
+                if len(selected_qubits) != 5:
+                    print("Erro: Você deve selecionar exatamente 5 qubits.")
+                else:
+                    ql_implication(my_circuit, selected_qubits)
+                    print("Circuito aplicado:")
+                    print(my_circuit.draw('text'))
+
+        elif escolha == '11':  # Opção para XOR Fuzzy ôplus
+            if num_qubits < 7:
+                print("O número mínimo de qubits para utilizar a opção XOR ôplus é 7.")
+            else:
+                selected_qubits = list(map(int, input("Digite os índices de 7 qubits para o circuito XOR ôplus, separados por espaço (começando de 0): ").split()))
+                if len(selected_qubits) != 7:
+                    print("Erro: Você deve selecionar exatamente 7 qubits.")
+                else:
+                    xor_oplus(my_circuit, selected_qubits)
+                    print("Circuito com XOR Fuzzy ôplus aplicado:")
+                    print(my_circuit.draw('text'))
 
         elif escolha == '0':
             print("Saindo do programa.")
             break
         else:
             print("Escolha inválida. Por favor, tente novamente.")
+
+
+        # Adiciona a barreira após cada operação
+        my_circuit.barrier()
+
+        print("Circuito atualizado:")
+        print(my_circuit.draw('text'))
 
 if __name__ == "__main__":
     main()

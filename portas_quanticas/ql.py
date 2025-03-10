@@ -1,22 +1,22 @@
-from qiskit import QuantumCircuit
+from qiskit import QuantumCircuit, QuantumRegister
 
-def ql_implication(qc, control_qubit1, control_qubit2, target_qubit, aux_qubit1, aux_qubit2):
-    # Aplica NOT no primeiro qubit de controle
-    qc.x(control_qubit1)
+def ql_implication(qc, qubits):
+    """
+    Aplica o circuito com Toffoli e NOT nos 5 qubits escolhidos pelo usuário.
     
-    # Aplica CCX com dois controles e um alvo auxiliar
-    qc.ccx(control_qubit1, control_qubit2, aux_qubit1)
-    
-    # Aplica NOT no resultado do CCX
-    qc.x(aux_qubit1)
+    Parâmetros:
+    qc (QuantumCircuit): Circuito quântico no qual as operações serão aplicadas.
+    qubits (list): Lista com 5 índices dos qubits escolhidos pelo usuário.
+    """
 
-    # Segunda CCX usando o resultado anterior como controle
-    qc.ccx(aux_qubit1, target_qubit, aux_qubit2)
+    # Aplicar a porta Toffoli com controle nos qubits 1 e 2 e alvo no qubit 3
+    qc.ccx(qubits[1], qubits[2], qubits[3])
 
-    # Aplica NOT no resultado final para completar a implicação
-    qc.x(aux_qubit2)
+    # Aplicar a porta NOT no qubit 3
+    qc.x(qubits[3])
 
-    # Reverte as operações para limpar os qubits auxiliares e controles
-    qc.x(aux_qubit1)
-    qc.ccx(control_qubit1, control_qubit2, aux_qubit1)
-    qc.x(control_qubit1)
+    # Aplicar a porta Toffoli com controle nos qubits 0 e 3 e alvo no qubit 4
+    qc.ccx(qubits[0], qubits[3], qubits[4])
+
+    # Aplicar a porta NOT no qubit 4
+    qc.x(qubits[4])
