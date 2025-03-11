@@ -1,5 +1,7 @@
 from qiskit import QuantumCircuit
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 from portas_quanticas.funcao_pertinencia import inicializa_circuito_com_probabilidades
 from portas_quanticas.t_norma import toffoli_circuit_interactive
@@ -40,6 +42,10 @@ def get_qubit_indices():
     target_qubits = list(map(int, input("Digite os índices dos qubits alvo, separados por espaço (começando de 0): ").split()))
     aux_qubits = list(map(int, input("Digite os índices dos qubits auxiliares, separados por espaço (começando de 0): ").split()))
     return control_qubits, target_qubits, aux_qubits
+
+def mostrar_circuito(circuito):
+    circuito.draw(output='mpl')
+    plt.show()
 
 def main():
     num_qubits = int(input("Quantos qubits você quer no circuito? "))
@@ -83,18 +89,24 @@ def main():
                 else:
                     overlap_function(my_circuit, selected_qubits)
                     print("Circuito com Overlap aplicado:")
+
         elif escolha == '7':  # Implementação da chamada para a função de Implicação (S, N)
             control_qubit = int(input("Digite o índice do qubit de controle (premissa da implicação): "))
-            target_qubit = int(input("Digite o índice do qubit a ser implicado (segundo controle): "))
-            aux_qubit = int(input("Digite o índice do qubit auxiliar para armazenar o resultado: "))
+            input_qubit = int(input("Digite o índice do qubit de entrada para a operação fuzzy: "))
+            target_qubit = int(input("Digite o índice do qubit alvo: "))
 
             # Verificar se os índices inseridos são válidos
-            if control_qubit == target_qubit or control_qubit == aux_qubit or target_qubit == aux_qubit:
+            if control_qubit == input_qubit or control_qubit == target_qubit or input_qubit == target_qubit:
                 print("Erro: Os qubits devem ser diferentes entre si.")
-            elif max(control_qubit, target_qubit, aux_qubit) >= num_qubits:
+            elif max(control_qubit, input_qubit, target_qubit) >= num_qubits:
                 print("Erro: Índice de qubit inválido. Certifique-se de que os índices estão dentro do número de qubits do circuito.")
             else:
-                implication(my_circuit, control_qubit, target_qubit, aux_qubit)
+                # Aplicar a operação de implicação fuzzy no circuito
+                implication(my_circuit, control_qubit, input_qubit, target_qubit)
+                
+                # Adicionar uma barreira para melhor visualização do circuito
+                my_circuit.barrier()
+                
                 print("Circuito com função de Implicação (S, N) aplicada:")
 
         elif escolha == '8':  # Opção para XOR Fuzzy ôminus
@@ -151,8 +163,10 @@ def main():
         # Adiciona a barreira após cada operação
         my_circuit.barrier()
 
+
         print("Circuito atualizado:")
-        print(my_circuit.draw('text'))  # Isso garante que a primeira escolha já apareça
+        print(my_circuit.draw('text'))  # Impressão em texto (ASCII)
+        mostrar_circuito(my_circuit)    # Exibição visual usando Matplotlib
 
 
 if __name__ == "__main__":
