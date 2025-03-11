@@ -43,8 +43,9 @@ Para iniciar o programa e interagir com as operações fuzzy no circuito:
 
 ```bash
 python main.py
+```
 
 ## 📬 Contato
 
-📧 Email: cescbotelho@gmail.com
+📧 Email: cescbotelho@gmail.com  
 🔗 GitHub: [CeciliaBotelho](https://github.com/CeciliaBotelho)
