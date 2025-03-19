@@ -1,7 +1,7 @@
 from qiskit import QuantumCircuit
 import numpy as np
 import matplotlib.pyplot as plt
-
+from qiskit.qasm3 import dump
 
 from portas_quanticas.funcao_pertinencia import inicializa_circuito_com_probabilidades
 from portas_quanticas.t_norma import toffoli_circuit_interactive
@@ -36,12 +36,16 @@ def mostrar_menu():
     escolha = input("Digite o número da sua escolha e pressione Enter: ")
     return escolha
 
-
 def get_qubit_indices():
     control_qubits = list(map(int, input("Digite os índices dos qubits de controle, separados por espaço (começando de 0): ").split()))
     target_qubits = list(map(int, input("Digite os índices dos qubits alvo, separados por espaço (começando de 0): ").split()))
     aux_qubits = list(map(int, input("Digite os índices dos qubits auxiliares, separados por espaço (começando de 0): ").split()))
     return control_qubits, target_qubits, aux_qubits
+
+def salvar_circuito_qasm(circuito):
+    with open("circuito.qasm", "w") as file:
+        dump(circuito, file)  # Salva em formato QASM 3
+    print("Circuito salvo em 'circuito.qasm' para IBM Quantum Experience.")
 
 def mostrar_circuito(circuito):
     circuito.draw(output='mpl')
@@ -155,8 +159,10 @@ def main():
             medir_qubits(my_circuit)
 
         elif escolha == '0':
+            salvar_circuito_qasm(my_circuit)  # Salvar o circuito antes de sair
             print("Saindo do programa.")
             break
+
         else:
             print("Escolha inválida. Por favor, tente novamente.")
 
